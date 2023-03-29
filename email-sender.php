@@ -1,54 +1,82 @@
-<<?php
-/*
-Plugin Name: email-sender
-Plugin URI: wordpress.org/plugins
-Description: A simple WordPress plugin to send daily published post report.
-Version: 1.0.0
-Author: sonam
-Author URI: sonam.wisdmlabs.net
-License: GPL2
-*/
+<?php
 
+/**
+ * The plugin bootstrap file
+ *
+ * This file is read by WordPress to generate the plugin information in the plugin
+ * admin area. This file also includes all of the dependencies used by the plugin,
+ * registers the activation and deactivation functions, and defines a function
+ * that starts the plugin.
+ *
+ * @link              https://sonam.wisdmlabs.net
+ * @since             1.0.0
+ * @package           Email_Sender
+ *
+ * @wordpress-plugin
+ * Plugin Name:       email-sender-plugin
+ * Plugin URI:        https://wordpress.org/plugins
+ * Description:       This is a simple WordPress plugin to send daily published post report.
+ * Version:           1.0.0
+ * Author:            Sonam Divyanshi
+ * Author URI:        https://sonam.wisdmlabs.net
+ * License:           GPL-2.0+
+ * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * Text Domain:       email-sender
+ * Domain Path:       /languages
+ */
 
-if (!defined('WPINC')) {
-    die;
+// If this file is called directly, abort.
+if ( ! defined( 'WPINC' ) ) {
+	die;
 }
 
-require plugin_dir_path( __FILE__ ). 'includes/get_post_details.php';
-//require plugin_dir_path( __FILE__ ). 'includes/page_speed.php';
-require plugin_dir_path( __FILE__ ). 'includes/send_post_details.php';
+/**
+ * Currently plugin version.
+ * Start at version 1.0.0 and use SemVer - https://semver.org
+ * Rename this for your plugin and update it as you release new versions.
+ */
+define( 'EMAIL_SENDER_VERSION', '1.0.0' );
 
-
-
-register_activation_hook( __FILE__, 'register_schedule');
-
-//Schedule register when plugin is installed
-function register_schedule() {
-  if (!wp_next_scheduled('my_daily_event')) {
-    wp_schedule_event(time(), 'daily', 'my_daily_event');
-  }
+/**
+ * The code that runs during plugin activation.
+ * This action is documented in includes/class-email-sender-activator.php
+ */
+function activate_email_sender() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-email-sender-activator.php';
+	Email_Sender_Activator::activate();
 }
 
-add_action('my_daily_event', 'send_daily_post_details');
-
-
-//To unschedule event when plugin deactivated
-register_deactivation_hook( __FILE__, 'remove_schedule');
-
-function remove_schedule() {
-  wp_clear_scheduled_hook('my_daily_event');
+/**
+ * The code that runs during plugin deactivation.
+ * This action is documented in includes/class-email-sender-deactivator.php
+ */
+function deactivate_email_sender() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-email-sender-deactivator.php';
+	Email_Sender_Deactivator::deactivate();
 }
 
+register_activation_hook( __FILE__, 'activate_email_sender' );
+register_deactivation_hook( __FILE__, 'deactivate_email_sender' );
 
-//Scheduling cron for every minute for demo 
-add_filter('cron_schedules', 'custom_cron_schedules');
+/**
+ * The core plugin class that is used to define internationalization,
+ * admin-specific hooks, and public-facing site hooks.
+ */
+require plugin_dir_path( __FILE__ ) . 'includes/class-email-sender.php';
 
-function custom_cron_schedules($schedules) {
-  if (!isset($schedules['1minute'])) {
-    $schedules['1minute'] = array(
-      'interval' => 60,
-      'display' => __('Once every minute'));
-  }
- 
-  return $schedules;
+/**
+ * Begins execution of the plugin.
+ *
+ * Since everything within the plugin is registered via hooks,
+ * then kicking off the plugin from this point in the file does
+ * not affect the page life cycle.
+ *
+ * @since    1.0.0
+ */
+function run_email_sender() {
+
+	$plugin = new Email_Sender();
+	$plugin->run();
+
 }
+run_email_sender();
