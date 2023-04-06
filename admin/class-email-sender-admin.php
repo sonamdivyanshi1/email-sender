@@ -73,7 +73,8 @@ class Email_Sender_Admin {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/email-sender-admin.css', array(), $this->version, 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/email-sender-admin.css', 
+		array(), $this->version, 'all' );
 
 	}
 
@@ -96,30 +97,42 @@ class Email_Sender_Admin {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/email-sender-admin.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/email-sender-admin.js',
+		 array( 'jquery' ), $this->version, false );
 
 	}
 
-	function custom_cron_schedules($schedules)
+	/**
+	 * Summary of custom_cron_schedules
+	 * @param mixed $schedules
+	 * @return mixed
+	 */
+	function custom_cron_schedules($schedules=array())
 	{
-		if (!isset($schedules['1minute'])) {
-			$schedules['1minute'] = array(
+		//if (!isset($schedules['1minute'])) {
+			$schedules['one_minute'] = array(
 				'interval' => 60,
-				'display' => __('Once every minute')
+				'display' => __('Once every minute', 'email-sender'),
 			);
-		}
+		//}
 
 		return $schedules;
 	}
 	
 	public function send_daily_post_details()
 	{
+
 		$to = get_option('admin_email');
 		$subject = 'Daily Post Details';
+		$today=getdate();
 		$args = array(
+			'post_type' => 'post',
+			'post_status' => 'publish',
 			'date_query' => array(
 				array(
-					'after' => '24 hours ago',
+					'year' => $today['year'],
+					'month' => $today['mon'],
+					'day' => $today['mday'],
 				),
 			),
 		);
@@ -149,14 +162,11 @@ class Email_Sender_Admin {
 				$meta_keywords = "No meta keywords available";
 			}
 
-			$page_speed_score = $this->get_page_speed_score(get_permalink($post->ID));
-
 			$message .= 'Post Title: ' . $post->post_title . "\n";
 			$message .= 'Post URL: ' . get_permalink($post->ID) . "\n";
 			$message .= 'Meta Title: ' . $meta_title_of_post . "\n";
 			$message .= 'Meta Description: ' . $meta_description . "\n";
 			$message .= 'Meta Keywords: ' . $meta_keywords . "\n";
-			$message .= 'Page Speed Score: ' . $page_speed_score . " seconds \n";
 			$message .= "\n";
 		}
 

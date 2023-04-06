@@ -32,8 +32,9 @@ class Email_Sender_Activator {
 	public static function activate() {
 
 		if (!wp_next_scheduled('email_event')) {
-			wp_schedule_event(strtotime('10:00'), 'daily', 'email_event');
+			wp_schedule_event(strtotime('23:59'), 'hourly', 'email_event');
 		  }
+		  
 
 	}
 
